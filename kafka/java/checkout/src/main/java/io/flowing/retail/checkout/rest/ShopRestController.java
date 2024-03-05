@@ -2,6 +2,7 @@ package io.flowing.retail.checkout.rest;
 
 import static org.springframework.web.bind.annotation.RequestMethod.PUT;
 
+import io.flowing.retail.checkout.application.InventoryService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -16,6 +17,9 @@ public class ShopRestController {
   
   @Autowired
   private CheckoutService checkoutService;
+
+  @Autowired
+  private InventoryService inventoryService;
   
   @RequestMapping(path = "/api/cart/order", method = PUT)
   public String placeOrder(@RequestParam(value = "customerId") String customerId) {
@@ -23,10 +27,14 @@ public class ShopRestController {
     Order order = new Order();
     order.addItem("article1", 5);
     order.addItem("article2", 10);
+
+    if (!inventoryService.checkAvailability(order.getItems())){
+      return "Items not available";
+    }
     
     order.setCustomer(new Customer("Camunda", "Zossener Strasse 55\n10961 Berlin\nGermany"));
     
-    String traceId =checkoutService.placeOrder(order);
+    String traceId = checkoutService.placeOrder(order);
         
     // note that we cannot easily return an order id here - as everything is asynchronous
     // and blocking the client is not what we want.
