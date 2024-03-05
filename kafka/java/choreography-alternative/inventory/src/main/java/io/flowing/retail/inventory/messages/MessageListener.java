@@ -38,41 +38,55 @@ public class MessageListener {
   @KafkaListener(id = "inventory", topics = MessageSender.TOPIC_NAME)
   public void paymentReceived(String messageJson, @Header("type") String messageType) throws JsonParseException, JsonMappingException, IOException {
     if ("PaymentReceivedEvent".equals(messageType)) {
-      Message<JsonNode> message = objectMapper.readValue(messageJson, new TypeReference<Message<JsonNode>>(){});
+      try {
+        Message<JsonNode> message = objectMapper.readValue(messageJson, new TypeReference<Message<JsonNode>>(){});
 
-      ObjectNode payload = (ObjectNode) message.getData();
-      Item[] items = objectMapper.treeToValue(payload.get("items"), Item[].class);
+        ObjectNode payload = (ObjectNode) message.getData();
+        Item[] items = objectMapper.treeToValue(payload.get("items"), Item[].class);
 
-      String pickId = inventoryService.pickItems( //
-              Arrays.asList(items), "order", payload.get("orderId").asText());
+        String pickId = inventoryService.pickItems( //
+                Arrays.asList(items), "order", payload.get("orderId").asText());
 
-      // as in payment - we have to keep the whole order in the payload
-      // as the data flows through this service
+        // as in payment - we have to keep the whole order in the payload
+        // as the data flows through this service
 
-      payload.put("pickId", pickId);
+        payload.put("pickId", pickId);
 
-      messageSender.send( //
-              new Message<JsonNode>( //
-                      "GoodsFetchedEvent", //
-                      message.getTraceid(), //
-                      payload));
+        messageSender.send( //
+                new Message<JsonNode>( //
+                        "GoodsFetchedEvent", //
+                        message.getTraceid(), //
+                        payload));
+
+      } catch (Exception e) {
+        e.printStackTrace();
+      }
     }
 
     if ("OrderPlacedEvent".equals(messageType)) {
-      Message<JsonNode> message = objectMapper.readValue(messageJson, new TypeReference<Message<JsonNode>>() {});
-      ObjectNode payload = (ObjectNode) message.getData();
-      Item[] items = objectMapper.treeToValue(payload.get("items"), Item[].class);
-      String orderId = objectMapper.treeToValue(payload.get("orderId"), String.class);
+      try {
+        JsonNode message = objectMapper.readTree(messageJson);
+        JsonNode payload = message.get("data");
+        Item[] items = objectMapper.treeToValue(payload.get("items"), Item[].class);
+        String orderId = objectMapper.treeToValue(payload.get("orderId"), String.class);
 
-      inventoryService.reserveGoods(Arrays.asList(items), "order placed", orderId, LocalDateTime.now().plusMinutes(2));
+        inventoryService.reserveGoods(Arrays.asList(items), "order placed", orderId, LocalDateTime.now().plusMinutes(2));
+      } catch (Exception e) {
+        e.printStackTrace();
+      }
     }
 
     if ("PaymentFailedEvent".equals(messageType)) {
-      Message<JsonNode> message = objectMapper.readValue(messageJson, new TypeReference<Message<JsonNode>>() {});
-      ObjectNode payload = (ObjectNode) message.getData();
-      String orderId = objectMapper.treeToValue(payload.get("orderId"), String.class);
+      try {
+        JsonNode message = objectMapper.readTree(messageJson);
+        JsonNode payload = message.get("data");
 
-      inventoryService.revertReservation(orderId);
+        String orderId = objectMapper.treeToValue(payload.get("orderId"), String.class);
+
+        inventoryService.revertReservation(orderId);
+      } catch (Exception e) {
+        e.printStackTrace();
+      }
     }
   }
 

@@ -5,26 +5,20 @@ public class Item {
   private String articleId;
   private int amount;
 
-  public Item(String articleId, int amount) {
+  public String getArticleId() {
+    return articleId;
+  }
+  public void setArticleId(String articleId) {
     this.articleId = articleId;
-    this.amount = amount;
   }
-
-  public Item setArticleId(String articleId) {
-    this.articleId = articleId; 
-    return this;
-  }
-
   public int getAmount() {
     return amount;
   }
-
-  public Item setAmount(int amount) {
+  public void setAmount(int amount) {
     this.amount = amount;
-    return this;
   }
-
-  public String getArticleId() {
-    return articleId;
+  @Override
+  public String toString() {
+    return "Item [articleId=" + articleId + ", amount=" + amount + "]";
   }
 }

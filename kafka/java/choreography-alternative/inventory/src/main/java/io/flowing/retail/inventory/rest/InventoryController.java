@@ -20,8 +20,14 @@ public class InventoryController {
     public String changeInventory() {
 
         List<Item> newItems = new ArrayList<>();
-        newItems.add(new Item("article1", 20));
-        newItems.add(new Item("article2", 20));
+        Item item1 = new Item();
+        item1.setArticleId("article1");
+        item1.setAmount(5);
+        newItems.add(item1);
+        Item item2 = new Item();
+        item2.setArticleId("article2");
+        item2.setAmount(20);
+        newItems.add(item2);
 
         inventoryService.topUpInventory(newItems);
 
