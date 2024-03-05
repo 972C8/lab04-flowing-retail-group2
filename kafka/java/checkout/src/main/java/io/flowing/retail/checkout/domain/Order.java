@@ -9,7 +9,12 @@ public class Order {
   private String orderId = "checkout-generated-" + UUID.randomUUID().toString();
   private Customer customer;
   private List<Item> items = new ArrayList<>();
-  
+  private Status status;
+
+  public Order() {
+    this.status = Status.PLACED;
+  }
+
   public void addItem(String articleId, int amount) {
     // keep only one item, but increase amount accordingly
     Item existingItem = removeItem(articleId);
@@ -56,5 +61,13 @@ public class Order {
 
   public void setCustomer(Customer customer) {
     this.customer = customer;
+  }
+  
+  public Status getStatus() {
+    return status;
+  }
+
+  public void setStatus(Status status) {
+    this.status = status;
   }
 }
