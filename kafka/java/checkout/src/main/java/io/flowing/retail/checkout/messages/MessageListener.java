@@ -1,5 +1,6 @@
 package io.flowing.retail.checkout.messages;
 
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -29,19 +30,27 @@ public class MessageListener {
     @KafkaListener(id = "checkout", topics = "flowing-retail")
     public void inventoryChange(String messageJson, @Header("type") String messageType) throws Exception {
         if ("InventoryIncreaseEvent".equals(messageType)) {
-            JsonNode message = objectMapper.readTree(messageJson);
-            ObjectNode payload = (ObjectNode) message.get("data");
-            Item[] items = objectMapper.treeToValue(payload.get("items"), Item[].class);
+            try {
+                JsonNode message = objectMapper.readTree(messageJson);
+                JsonNode dataNode = message.get("data");
+                Item[] items = objectMapper.treeToValue(dataNode, Item[].class);
 
-            inventoryService.increaseInventory(Arrays.asList(items));
+                inventoryService.increaseInventory(Arrays.asList(items));
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
         }
 
         if ("InventoryDecreaseEvent".equals(messageType)) {
-            JsonNode message = objectMapper.readTree(messageJson);
-            ObjectNode payload = (ObjectNode) message.get("data");
-            Item[] items = objectMapper.treeToValue(payload.get("items"), Item[].class);
+            try {
+                JsonNode message = objectMapper.readTree(messageJson);
+                JsonNode dataNode = message.get("data");
+                Item[] items = objectMapper.treeToValue(dataNode, Item[].class);
 
-            inventoryService.decreaseInventory(Arrays.asList(items));
+                inventoryService.decreaseInventory(Arrays.asList(items));
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
         }
     }
 }
