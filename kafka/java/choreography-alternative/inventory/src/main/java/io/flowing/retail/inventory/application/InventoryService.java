@@ -46,6 +46,7 @@ public class InventoryService {
       for (Item i: items) {
         inventory.topUpInventory(i);
       }
+      publishInventoryEvent(items, true);
     } catch (Exception e) {
       e.printStackTrace();
     }
