@@ -31,7 +31,7 @@ public class MessageListener {
   @Transactional
   @KafkaListener(id = "payment", topics = MessageSender.TOPIC_NAME)
   public void orderPlaced(String messageJson, @Header("type") String messageType) throws Exception {
-    if ("OrderPlacedEvent".equals(messageType)) {
+    if ("OrderPlacedEvent".equals(messageType) || "RetryPaymentCommand".equals(messageType)) {
 // Note that we now have to read order data from this message!
       // Bad smell 1 (reading some event instead of dedicated command)
       JsonNode message = objectMapper.readTree(messageJson);
