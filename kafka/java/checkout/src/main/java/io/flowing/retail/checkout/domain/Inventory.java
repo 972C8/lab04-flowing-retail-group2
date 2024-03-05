@@ -38,6 +38,19 @@ public class Inventory {
         }
     }
 
+    public boolean itemAvailable (Item item) throws Exception {
+        for (Item i: inventory) {
+            if (i.getArticleId().equals(item.getArticleId())) {
+                if (i.getAmount() >= item.getAmount()){
+                    return true;
+                } else {
+                    return false;
+                }
+            }
+        }
+        throw new Exception("Article not in Inventory");
+    }
+
     public Item getArticleFromInventory(String articleId) {
         for (Item i: inventory) {
             if (i.getArticleId().equals(articleId)){

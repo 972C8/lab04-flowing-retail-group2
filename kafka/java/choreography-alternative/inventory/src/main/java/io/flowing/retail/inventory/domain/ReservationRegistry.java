@@ -16,4 +16,13 @@ public class ReservationRegistry {
     public void addReservation(Reservation reservation) {
         registry.add(reservation);
     }
+
+    public List<Item> removeReservation(String orderId) throws Exception{
+        for (Reservation r: registry) {
+            if (r.refId.equals(orderId)) {
+                return r.items;
+            }
+        }
+        throw new Exception("No Reservation found");
+    }
 }

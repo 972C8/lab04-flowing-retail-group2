@@ -40,6 +40,17 @@ public class InventoryService {
     return true;
   }
 
+  public void revertReservation(String orderId) {
+    try {
+      List<Item> items = reservationRegistry.removeReservation(orderId);
+      for (Item i: items) {
+        inventory.topUpInventory(i);
+      }
+    } catch (Exception e) {
+      e.printStackTrace();
+    }
+  }
+
   /**
    * Order to pick the given items in the warehouse. The inventory is decreased. 
    * Reservation fitting the reason/refId might be used to fulfill the order.
@@ -62,14 +73,11 @@ public class InventoryService {
   /**
    * New goods are arrived and inventory is increased
    */
-  public void topUpInventory(String articleId, int amount) {
-    Item item = new Item()
-            .setAmount(amount)
-            .setArticleId(articleId);
-    inventory.topUpInventory(item);
-
-    Message<Item> m = new Message<>("InventoryToppedUp", item);
-    messageSender.send(m);
+  public void topUpInventory(List<Item> newItems) {
+    for(Item i: newItems) {
+      inventory.topUpInventory(i);
+    }
+    publishInventoryEvent(newItems, true);
   }
 
   private void publishInventoryEvent (List<Item> items, boolean increase) {

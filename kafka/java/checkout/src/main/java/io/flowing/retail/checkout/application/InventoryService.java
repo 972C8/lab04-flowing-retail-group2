@@ -24,4 +24,17 @@ public class InventoryService {
         }
         System.out.println("Inventory updated");
     }
+
+    public boolean checkAvailability(List<Item> items) {
+        Boolean result = false;
+        for (Item i: items) {
+            try {
+                result = inventory.itemAvailable(i);
+            } catch (Exception e) {
+                e.printStackTrace();
+                return false;
+            }
+        }
+        return result;
+    }
 }

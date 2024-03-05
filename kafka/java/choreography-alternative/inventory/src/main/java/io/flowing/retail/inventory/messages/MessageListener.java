@@ -60,12 +60,19 @@ public class MessageListener {
 
     if ("OrderPlacedEvent".equals(messageType)) {
       Message<JsonNode> message = objectMapper.readValue(messageJson, new TypeReference<Message<JsonNode>>() {});
-      System.out.println(messageJson);
       ObjectNode payload = (ObjectNode) message.getData();
       Item[] items = objectMapper.treeToValue(payload.get("items"), Item[].class);
       String orderId = objectMapper.treeToValue(payload.get("orderId"), String.class);
 
       inventoryService.reserveGoods(Arrays.asList(items), "order placed", orderId, LocalDateTime.now().plusMinutes(2));
+    }
+
+    if ("PaymentFailedEvent".equals(messageType)) {
+      Message<JsonNode> message = objectMapper.readValue(messageJson, new TypeReference<Message<JsonNode>>() {});
+      ObjectNode payload = (ObjectNode) message.getData();
+      String orderId = objectMapper.treeToValue(payload.get("orderId"), String.class);
+
+      inventoryService.revertReservation(orderId);
     }
   }
 
