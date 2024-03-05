@@ -14,6 +14,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
 import io.flowing.retail.payment.application.PaymentService;
+import io.flowing.retail.payment.PaymentFailed;
 
 @Component
 public class MessageListener {    
@@ -51,18 +52,27 @@ public class MessageListener {
       long amount = payload.get("items").iterator().next().get("amount").asLong();
       //long amount = payload.get("totalSum").asLong();
 
-      String paymentId = paymentService.createPayment(orderId, amount);
+      try {
+        String paymentId = paymentService.createPayment(orderId, amount);
 
-      // Note that we need to pass along the whole order object
-      // Maybe with additional data we have
-      // Bad smell 4 (data flow passing through - data might grow big and most data is not needed for payment)
-      payload.put("paymentId", paymentId);
+        // Note that we need to pass along the whole order object
+        // Maybe with additional data we have
+        // Bad smell 4 (data flow passing through - data might grow big and most data is not needed for payment)
+        payload.put("paymentId", paymentId);
 
-      messageSender.send( //
-              new Message<JsonNode>( //
-                      "PaymentReceivedEvent", //
-                      message.get("traceid").asText(), //
-                      message.get("data")));
+        messageSender.send( //
+                new Message<JsonNode>( //
+                        "PaymentReceivedEvent", //
+                        message.get("traceid").asText(), //
+                        message.get("data")));
+
+      } catch (PaymentFailed e) {
+        messageSender.send( //
+                new Message<JsonNode>( //
+                        "PaymentFailedEvent", //
+                        message.get("traceid").asText(), //
+                        message.get("data")));
+      }
     }
   }
     
